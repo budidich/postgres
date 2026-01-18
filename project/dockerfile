@@ -1,0 +1,67 @@
+FROM ubuntu:24.04
+
+# Устанавливаем необходимые зависимости
+RUN apt-get update && apt-get install -y \
+    wget \
+    bzip2 \
+    sudo \
+    libreadline8 \
+    locales \
+    && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем русскую локаль
+RUN locale-gen ru_RU.UTF-8 && locale-gen en_US.UTF-8
+ENV LANG ru_RU.UTF-8
+ENV LC_ALL ru_RU.UTF-8
+
+# Создаем пользователя
+RUN useradd -r -s /bin/bash postgres
+
+# Копируем и устанавливаем PostgreSQL из .deb пакетов
+WORKDIR /tmp
+COPY postgresql_17.6_1_ubuntu_24.04_x86_64_package.tar.bz2 /tmp/
+
+# Распаковываем архив
+RUN tar -xjf postgresql_17.6_1_ubuntu_24.04_x86_64_package.tar.bz2 && \
+    ls -la && \
+    echo "Устанавливаем .deb пакеты..." && \
+    # Устанавливаем пакеты в правильном порядке
+    dpkg -i postgresql-common_*.deb || true && \
+    dpkg -i libpq5_*.deb || true && \
+    dpkg -i libecpg6_*.deb || true && \
+    dpkg -i libpgtypes3_*.deb || true && \
+    dpkg -i libecpg-compat3_*.deb || true && \
+    dpkg -i postgresql-client-common_*.deb || true && \
+    dpkg -i postgresql-client-17_*.deb || true && \
+    dpkg -i postgresql-17_*.deb || true && \
+    # Исправляем зависимости
+    apt-get update && apt-get -f install -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Создаем необходимые директории
+RUN mkdir -p /var/lib/postgresql/data && \
+    chown -R postgres:postgres /var/lib/postgresql && \
+    mkdir -p /docker-entrypoint-initdb.d
+
+# Копируем скрипт инициализации
+COPY init-scripts/ /docker-entrypoint-initdb.d/
+
+# Переменные окружения
+ENV PGDATA /var/lib/postgresql/data
+ENV POSTGRES_USER postgres
+ENV POSTGRES_PASSWORD postgres
+ENV POSTGRES_DB postgres
+
+# Открываем порт
+EXPOSE 5432
+
+# Рабочий каталог и пользователь
+WORKDIR /var/lib/postgresql
+USER postgres
+
+# Скрипт запуска
+#COPY --chown=postgres:postgres docker-entrypoint.sh /usr/local/bin/
+#RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+#ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+#CMD ["/opt/1C/postgres/17.6-1/bin/postgres", "-D", "/var/lib/postgresql/data"]

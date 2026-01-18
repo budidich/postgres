@@ -1,0 +1,37 @@
+services:
+  postgres-1c:
+    build: .
+    container_name: postgres-1c
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data
+      LC_ALL: ru_RU.UTF-8
+      LANG: ru_RU.UTF-8
+    volumes:
+      # Для сохранения данных
+      - postgres_data:/var/lib/postgresql/data
+      # Для кастомных конфигов (опционально)
+      - ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf:ro
+      - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf:ro
+      # Для инициализационных скриптов
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - 1c-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    name: postgres-1c-data
+
+networks:
+  1c-network:
+    driver: bridge
