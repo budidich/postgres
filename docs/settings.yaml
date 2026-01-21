@@ -1,0 +1,46 @@
+project:
+  sprint: "D1"
+  iteration: 1
+
+paths:
+  project_root: "/postgres"
+  distr_dir: "$PROJECT_ROOT/distr"
+  project_dir: "$PROJECT_ROOT/project"
+  init_scripts_dir: "$PROJECT_DIR/init-scripts"
+  docs_dir: "$PROJECT_ROOT/docs"
+  log_file: "$DOCS_DIR/D1_logs.md"
+  postgres_distr: "postgresql_17.6_1_ubuntu_24.04_x86_64_package.tar.bz2"
+
+files:
+  D1_bash_script: "D1_bash_script.py"
+  D1_bash_script_test: "D1_bash_script_test.py"
+  D1_logs: "D1_logs.md"
+  D1_promt_postgres: "D1_promt_postgres.md"
+  D2_promt_postgres: "D2_promt_postgres.md"
+  promt_postgres: "promt_postgres.md"
+  settings: "settings.md"
+
+project_structure:
+  docs:
+    - "D1_bash_script.py"
+    - "D1_bash_script_test.py"
+    - "D1_logs.md"
+    - "D1_promt_postgres.md"
+    - "D2_promt_postgres.md"
+    - "promt_postgres.md"
+    - "settings.md"
+  distr:
+    - "postgresql_17.6_1_ubuntu_24.04_x86_64_package.tar.bz2"
+
+ports:
+  postgres: 5432
+  pgadmin: 5050
+
+containers:
+  postgres_db: "postgres_db"
+  pgadmin4: "pgadmin4"
+
+credentials:
+  postgres_user: "admin"
+  postgres_password: "secret"
+  postgres_db: "testdb"
